@@ -105,6 +105,7 @@ void splitcmd()
                 char *arg = new char[a.size() + 1];
                 strcpy(arg, a.c_str());
                 segcmd.push_back(arg);
+                delete arg;
             }
             else
             {
@@ -112,6 +113,7 @@ void splitcmd()
                 char *arg = new char[a.size() + 1];
                 strcpy(arg, a.c_str());
                 segcmd.push_back(arg);
+                delete arg;
             }
             start = i + 2;
         }
@@ -240,12 +242,16 @@ void findpipe()
         }
     }
 }
-int main()
+void sign()
 {
-    print();
     signal(SIGINT, SIG_IGN);
     signal(SIGTSTP, SIG_IGN);
     signal(SIGCHLD, SIG_IGN);
+}
+int main()
+{
+    print();
+    sign();
     while (start)
     {
         for (auto &v : args)
