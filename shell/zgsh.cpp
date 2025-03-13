@@ -15,7 +15,7 @@ char path[1024];
 bool cdcmd = false, htpro = false;
 int pipecount, pipes[100][2], argscount;
 pid_t pids[100];
-char *last_time_path = new char[100];
+vector<string> last_time_path;
 void getcurrentdir()
 {
     for (auto &v : args)
@@ -156,17 +156,21 @@ void cdcommit()
     string broken = order.substr(3);
     if (broken == "-")
     {
-        cout << last_time_path << endl;
-        if (chdir(last_time_path) == -1)
+        if(last_time_path.empty())
+        {
+            last_time_path.push_back("/home/zgyx/Shell/shell");
+        }
+        cout << last_time_path.back() << endl;
+        if (chdir(last_time_path.back().c_str()) == -1)
         {
             perror("cd");
         }
+        last_time_path.pop_back();
     }
     else
     {
-        memset(last_time_path, '\0', sizeof(last_time_path));
         char* name = getcwd(path, sizeof(path));
-        strcpy(last_time_path, name);
+        last_time_path.push_back(name);
         if (chdir(broken.c_str()) == -1)
         {
             cout << "cd: 没有那个文件或目录或参数太多" << endl;
@@ -291,7 +295,6 @@ int main()
         }
         else if (order == "exit" || order == "eee")
         {
-            delete[] last_time_path;
             break;
         }
         if (order.find("&") != string::npos)
