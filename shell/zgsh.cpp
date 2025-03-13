@@ -15,6 +15,7 @@ char path[1024];
 bool cdcmd = false, htpro = false;
 int pipecount, pipes[100][2], argscount;
 pid_t pids[100];
+char *last_time_path = new char[100];
 void getcurrentdir()
 {
     for (auto &v : args)
@@ -23,7 +24,6 @@ void getcurrentdir()
     }
     if (getcwd(path, sizeof(path)) != nullptr)
     {
-        getenv("OLDPWD");
         cout << "\033[32m➜  \033[0m";
         string cwd;
         cwd.assign(path);
@@ -156,16 +156,21 @@ void cdcommit()
     string broken = order.substr(3);
     if (broken == "-")
     {
-        char *last_time_path = getenv("OLDPWD");
         cout << last_time_path << endl;
         if (chdir(last_time_path) == -1)
         {
             perror("cd");
         }
     }
-    else if (chdir(broken.c_str()) == -1)
+    else
     {
-        cout << "cd: 没有那个文件或目录或参数太多" << endl;
+        memset(last_time_path, '\0', sizeof(last_time_path));
+        char* name = getcwd(path, sizeof(path));
+        strcpy(last_time_path, name);
+        if (chdir(broken.c_str()) == -1)
+        {
+            cout << "cd: 没有那个文件或目录或参数太多" << endl;
+        }
     }
 }
 void pidfork(pid_t pid, int count)
@@ -286,6 +291,7 @@ int main()
         }
         else if (order == "exit" || order == "eee")
         {
+            delete[] last_time_path;
             break;
         }
         if (order.find("&") != string::npos)
@@ -312,7 +318,7 @@ int main()
         {
             waitpid(pids[i], NULL, 0);
         }
-        if(htpro)
+        if (htpro)
         {
             cout << endl;
         }
