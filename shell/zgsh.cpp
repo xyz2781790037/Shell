@@ -17,16 +17,13 @@ int pipecount, pipes[100][2], argscount;
 pid_t pids[100];
 void getcurrentdir()
 {
-    memset(pipes, 0, sizeof(pipes));
-    order.clear();
-    segcmd.clear();
-    argscount = pipecount = 0;
     for (auto &v : args)
     {
         v.clear();
     }
     if (getcwd(path, sizeof(path)) != nullptr)
     {
+        getenv("OLDPWD");
         cout << "\033[32m➜  \033[0m";
         string cwd;
         cwd.assign(path);
@@ -105,7 +102,7 @@ void splitcmd()
                 char *arg = new char[a.size() + 1];
                 strcpy(arg, a.c_str());
                 segcmd.push_back(arg);
-                delete arg;
+                delete[] arg;
             }
             else
             {
@@ -113,7 +110,7 @@ void splitcmd()
                 char *arg = new char[a.size() + 1];
                 strcpy(arg, a.c_str());
                 segcmd.push_back(arg);
-                delete arg;
+                delete[] arg;
             }
             start = i + 2;
         }
@@ -198,8 +195,16 @@ void pidfork(pid_t pid, int count)
         if (execvp(args[count][0], args[count].data()) == -1 && cdcmd == false)
         {
             cout << "zgsh: command not found: " << args[count][0] << endl;
+            for (int i = 0; i < argscount; ++i)
+            {
+                for (char *ptr : args[i])
+                {
+                    delete[] ptr;
+                }
+                args[i].clear();
+            }
+            exit(1);
         }
-        exit(1);
     }
     else if (pid > 0 && htpro)
     {
@@ -319,5 +324,9 @@ int main()
             }
             args[i].clear();
         }
+        memset(pipes, 0, sizeof(pipes));
+        order.clear();
+        segcmd.clear();
+        argscount = pipecount = 0;
     }
 }
